@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS CLOUD Base Photo-Gallery Image Upload, View</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        /* Upload Image Section */
+        .image-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        /* Gallery Container */
+        .gallery-container {
+            max-width: 1000px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Gallery Image Styling */
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        /* Hover Zoom Effect */
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Delete Button Styling */
+        .delete-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .delete-button:hover {
+            background-color: rgba(255, 0, 0, 1);
+        }
+
+        /* Carousel Styling */
+        .carousel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .carousel img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-carousel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-carousel:hover {
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<h2>AWS CLOUD Base Photo-Gallery Image Upload, View</h2>
+
+<!-- Upload Section -->
+<div class="image-preview">
+    <input type="file" id="imageInput" accept="image/*" />
+</div>
+
+<!-- Gallery Container -->
+<div class="gallery-container" id="galleryContainer">
+    <!-- Uploaded images will appear here -->
+</div>
+
+<!-- Carousel View -->
+<div class="carousel" id="carousel">
+    <span class="close-carousel" onclick="closeCarousel()">&times;</span>
+    <img id="carouselImage" src="" alt="Carousel Image">
+    <div class="carousel-controls">
+        <span onclick="prevImage()">&#10094;</span>
+        <span onclick="nextImage()">&#10095;</span>
+    </div>
+</div>
+
+<script>
+    const imageInput = document.getElementById("imageInput");
+    const galleryContainer = document.getElementById("galleryContainer");
+    const carousel = document.getElementById("carousel");
+    const carouselImage = document.getElementById("carouselImage");
+
+    let imageSources = [];
+    let currentIndex = 0;
+
+    // Display and add image to gallery
+    imageInput.addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Create a new gallery item with delete button
+                const newImage = document.createElement("div");
+                newImage.classList.add("gallery-item");
+                newImage.innerHTML = `
+                    <img src="${e.target.result}" alt="Uploaded Image" onclick="openCarousel(${imageSources.length})">
+                    <button class="delete-button" onclick="deleteImage(this)">Delete</button>
+                `;
+                galleryContainer.appendChild(newImage);
+                imageSources.push(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Open Carousel
+    function openCarousel(index) {
+        currentIndex = index;
+        carouselImage.src = imageSources[currentIndex];
+        carousel.style.display = "flex";
+    }
+
+    // Close Carousel
+    function closeCarousel() {
+        carousel.style.display = "none";
+    }
+
+    // Navigate to the previous image in carousel
+    function prevImage() {
+        currentIndex = (currentIndex - 1 + imageSources.length) % imageSources.length;
+        carouselImage.src = imageSources[currentIndex];
+    }
+
+    // Navigate to the next image in carousel
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % imageSources.length;
+        carouselImage.src = imageSources[currentIndex];
+    }
+
+    // Delete Image from Gallery
+    function deleteImage(buttonElement) {
+        const galleryItem = buttonElement.parentElement;
+        const imgSrc = galleryItem.querySelector("img").src;
+        const imgIndex = imageSources.indexOf(imgSrc);
+
+        if (imgIndex !== -1) {
+            imageSources.splice(imgIndex, 1);
+        }
+
+        galleryContainer.removeChild(galleryItem);
+    }
+</script>
+
+</body>
+</html>
