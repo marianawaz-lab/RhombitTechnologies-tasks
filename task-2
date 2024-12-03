@@ -1,0 +1,142 @@
+# Online Blood Bank System Using AWS EC2
+
+This guide provides a step-by-step process to deploy an online blood bank system on the AWS platform using EC2 instances.
+
+---
+
+## Step 1: **Set Up an AWS Account**
+1. Sign in or create an AWS account at [AWS Console](https://aws.amazon.com/).
+2. Navigate to the AWS Management Console.
+3. Set up billing alerts to monitor resource usage and costs.
+
+---
+
+## Step 2: **Launch an EC2 Instance**
+1. Go to the EC2 Dashboard.
+2. Click **Launch Instance**.
+3. Configure the instance:
+   - Choose an Amazon Machine Image (AMI): Select **Amazon Linux 2** or **Ubuntu**.
+   - Instance type: Select a t2.micro instance (free tier eligible).
+   - Key pair: Create a new key pair or use an existing one for SSH access.
+   - Network settings: Ensure the security group allows HTTP (port 80), HTTPS (port 443), and SSH (port 22).
+   - Storage: Allocate sufficient storage (e.g., 10-20 GB).
+4. Click **Launch Instance** and wait for it to initialize.
+
+---
+
+## Step 3: **Connect to the EC2 Instance**
+1. Access the instance via SSH using the key pair:
+   ```bash
+   ssh -i "your-key.pem" ec2-user@<EC2-Instance-Public-IP>
+   ```
+2. Update the instance:
+   ```bash
+   sudo yum update -y  # For Amazon Linux
+   sudo apt update && sudo apt upgrade -y  # For Ubuntu
+   ```
+
+---
+
+## Step 4: **Install Required Software**
+### Web Server Setup
+1. Install Apache or NGINX:
+   ```bash
+   sudo yum install httpd -y  # For Amazon Linux
+   sudo apt install apache2 -y  # For Ubuntu
+   ```
+2. Start the web server:
+   ```bash
+   sudo systemctl start httpd  # For Amazon Linux
+   sudo systemctl start apache2  # For Ubuntu
+   ```
+3. Enable the web server to start on boot:
+   ```bash
+   sudo systemctl enable httpd
+   sudo systemctl enable apache2
+   ```
+
+### Database Setup
+1. Install MySQL:
+   ```bash
+   sudo yum install mysql -y  # For Amazon Linux
+   sudo apt install mysql-server -y  # For Ubuntu
+   ```
+2. Start and secure MySQL:
+   ```bash
+   sudo systemctl start mysqld
+   sudo mysql_secure_installation
+   ```
+3. Create a database:
+   ```sql
+   CREATE DATABASE blood_bank;
+   CREATE USER 'blood_user'@'%' IDENTIFIED BY 'securepassword';
+   GRANT ALL PRIVILEGES ON blood_bank.* TO 'blood_user'@'%';
+   FLUSH PRIVILEGES;
+   ```
+
+---
+
+## Step 5: **Deploy the Application**
+1. Install PHP (if using PHP for backend):
+   ```bash
+   sudo yum install php php-mysql -y  # For Amazon Linux
+   sudo apt install php php-mysql -y  # For Ubuntu
+   ```
+2. Upload your application files:
+   - Use SCP or an FTP client to upload your blood bank system code to `/var/www/html/`.
+   ```bash
+   scp -i "your-key.pem" ./blood_bank_system.zip ec2-user@<EC2-Instance-Public-IP>:/var/www/html/
+   ```
+   - Unzip and place files in `/var/www/html/`.
+   ```bash
+   sudo yum install unzip -y  # For Amazon Linux
+   sudo apt install unzip -y  # For Ubuntu
+   sudo unzip blood_bank_system.zip -d /var/www/html/
+   ```
+3. Set file permissions:
+   ```bash
+   sudo chown -R apache:apache /var/www/html/  # For Apache
+   sudo chmod -R 755 /var/www/html/
+   ```
+
+---
+
+## Step 6: **Configure the Application**
+1. Update database connection details in the application’s configuration file.
+2. Restart the web server:
+   ```bash
+   sudo systemctl restart httpd  # For Amazon Linux
+   sudo systemctl restart apache2  # For Ubuntu
+   ```
+
+---
+
+## Step 7: **Test the System**
+1. Open a browser and enter the EC2 instance’s public IP.
+2. Verify that the blood bank system loads correctly.
+
+---
+
+## Step 8: **Enable Domain Name and SSL (Optional)**
+1. Assign a domain name to the EC2 instance via Route 53.
+2. Install Certbot for HTTPS:
+   ```bash
+   sudo yum install certbot python3-certbot-apache -y  # For Amazon Linux
+   sudo apt install certbot python3-certbot-apache -y  # For Ubuntu
+   ```
+3. Obtain and configure an SSL certificate:
+   ```bash
+   sudo certbot --apache
+   ```
+
+---
+
+## Step 9: **Monitor and Maintain**
+1. Use AWS CloudWatch to monitor instance performance.
+2. Back up the database regularly using snapshots or automated scripts.
+3. Scale the application using an Auto Scaling Group if required.
+
+---
+
+By following these steps, you can set up and deploy an online blood bank system on AWS EC2, enabling efficient management of blood deposits and patient data.
+
